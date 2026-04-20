@@ -1,8 +1,19 @@
 const express = require("express");
-const cors = require("cors");
-
 const app = express();
+
+const http = require("http");
+const cors = require("cors");
+const { Server } = require("socket.io");
+
 app.use(express.json());
+const server = http.createServer(app);
+
+const io = new Server(server, {
+    cors: {
+        origin: ["http://localhost:5173"],
+        methods: ["GET", "POST"]
+    }
+})
 
 const PORT = 3000;
 
@@ -29,15 +40,47 @@ const arrayDeck = suites.flatMap(suite => ranks.map(rank => ({ rank, suite, valu
 arrayDeck.push({ rank: "Joker", suite: "Black", value: 0 });
 arrayDeck.push({ rank: "Joker", suite: "Red", value: 0 });
 
-const shuffledDeck = arrayDeck.sort(() => Math.random() - 0.5);
+function shuffleDeck(deck) {
+    var currentIndex = deck.length, temporaryValue, randomIndex;
 
-app.use(cors({
-    origin: ["http://localhost:5173"]
-}));
+    while (currentIndex) {
+        randomIndex = Math.floor(Math.random() * currentIndex--);
+        temporaryValue = deck[currentIndex];
+        deck[currentIndex] = deck[randomIndex];
+        deck[randomIndex] = temporaryValue;
+    }
+    return deck
+}
+
+const shuffledDeck = shuffleDeck(arrayDeck);
+
+function drawCard() {
+    card = shuffledDeck.pop();
+    return card;
+}
+
+app.use(cors());
 
 
 app.get("/", (req, res) => {
     res.send("Joined Node Server");
+});
+
+io.on("connection", (socket) => {
+    socket.on("draw_card", (data) => {
+        card = drawCard();
+        socket.emit("update_deck", {
+            card: card,
+            updatedDeck: shuffledDeck
+        });
+        console.log("Room", data.room, "drew a card: ", card);
+    });
+
+    socket.on("join_room", (data) => {
+        socket.join(data)
+        console.log("ROOMS", socket.rooms);
+    });
+
 });
 
 app.get('/status', (req, res) => {
@@ -53,10 +96,16 @@ app.get("/api/deck", (req, res) => {
 });
 
 app.post("/api/draw", (request, response) => {
-    console.log(request.body)
-    return response.send(200)
+    const card = drawCard();
+    return response.json(card)
 })
 
-app.listen(PORT, () => {
+app.post("/api/shuffle", (request, response) => {
+    conseole.log("Shuffling the deck...");
+    const newDeck = shuffleDeck(shuffleDeck);
+    return response.json(newDeck);
+})
+
+server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 })
