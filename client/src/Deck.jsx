@@ -12,18 +12,14 @@ export default function Deck() {
     const [fetchedDeck, setFetchedDeck] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [room, setRoom] = useState("");
+    const [room, setRoom] = useState("1");
 
 
     useEffect(() => {
-        const fetchDeck = async () => {
+        function fetchDeck() {
             try {
-                const response = await fetch("http://localhost:3000/api/deck");
-                if (!response.ok) {
-                    throw new Error(`HTTP error: ${response.status}`);
-                }
-                const data = await response.json();
-                setFetchedDeck(data);
+                console.log("Requesting deck for room: ", room);
+                socket.emit("request_deck", { room: room });
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -56,9 +52,10 @@ export default function Deck() {
 
     const joinRoom = () => {
         if (room !== "") {
-            socket.emit("join_room", room);
+            socket.emit("join_room", {room: room});
+            socket.emit("request_deck", { room: room });
+
         }
-        console.log(io.of("/").adapter.rooms);
     };
 
     const drawCard = () => {
@@ -71,14 +68,6 @@ export default function Deck() {
     return (
         <>
             <h2>Deck</h2>
-            {/* <input onChange={(e) => { setRoom(e.target.value) }} type="text" placeholder="Room Code..." />
-            <button onClick={joinRoom}>Join Room</button>
-
-            <input onChange={(e) => { setMessage(e.target.value) }} type="text" placeholder="Message..." />
-            <button onClick={sendMessage}>Send Message</button>
-
-            <h1>{serverMessage ? serverMessage.message : null}</h1> */}
-
             <div className="card-wrapper">
                 {columns.map(column => (
                     <div key={`column-${column}`} className={`column-${column}`}>
@@ -89,7 +78,7 @@ export default function Deck() {
                 ))}
             </div>
 
-            <input onChange={(e) => { setRoom(e.target.value) }} type="text" placeholder="Room Code..." />
+            <input id="room-code" onChange={(e) => { setRoom(e.target.value) }} type="text" placeholder="Room Code..." />
             <button onClick={joinRoom}>Join Room</button>
 
             <button onClick={drawCard}>Draw Card</button>

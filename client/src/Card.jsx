@@ -16,8 +16,8 @@ export default function Card({ suite, rank, value }) {
     return (
         <div key={`${suite}-${rank}`} className='card-container' id={`${suite}-${rank}-container`} onTouchStart={handleTouchStart} onClick={handleClick}>
             <div className="card">
-                <img className="card-front" id={`${suite}-${rank}-front`} src={`/src/assets/cards/${rank}_of_${suite}.png`} alt={`${rank} of ${suite}`} />
-                <img className="card-back" id={`${suite}-${rank}-back`} src={`/src/assets/cards/card_back.png`} alt="Card Back" />
+                <img className="card-front" id={`${suite}-${rank}-front`} src={`/src/images/cards/${rank}_of_${suite}.png`} alt={`${rank} of ${suite}`} />
+                <img className="card-back" id={`${suite}-${rank}-back`} src={`/src/images/cards/card_back.png`} alt="Card Back" />
             </div>
         </div>
     )

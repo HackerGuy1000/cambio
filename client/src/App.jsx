@@ -6,30 +6,6 @@ import { useState, useEffect } from 'react';
 
 function App() {
 
-  const [deck, setDeck] = useState([]);
-
-  let fetchedDeck = false;
-
-  useEffect(() => {
-    const fetchDeck = async () => {
-      if (!fetchedDeck) {
-        try {
-          const response = await fetch("http://localhost:3000/api/deck");
-          if (!response.ok) {
-            throw new Error(`HTTP error: , ${response.status}`);
-          }
-          const data = await response.json();
-          setDeck(data);
-          fetchedDeck = true;
-        } catch (error) {
-          console.error('Error message: ', error);
-        }
-      }
-    }
-    fetchDeck();
-
-  }, []);
-
 
   return (
     <BrowserRouter>

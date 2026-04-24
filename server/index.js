@@ -4,13 +4,14 @@ const app = express();
 const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
+const { json } = require("stream/consumers");
 
 app.use(express.json());
 const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173"],
+        origin: ["http://localhost:5173", "http://localhost:4173"],
         methods: ["GET", "POST"]
     }
 })
@@ -36,9 +37,32 @@ const values = {
     "Queen": 12,
 }
 
-const arrayDeck = suites.flatMap(suite => ranks.map(rank => ({ rank, suite, value: rank != "King" ? values[rank] : suite == "Hearts" || suite == "Diamonds" ? -1 : 13 })));
-arrayDeck.push({ rank: "Joker", suite: "Black", value: 0 });
-arrayDeck.push({ rank: "Joker", suite: "Red", value: 0 });
+const decks = new Map()
+
+function getDeck(room) {
+    if(decks.has(room)){
+        return decks.get(room);
+    }
+    else {
+        decks.set(room, createDeck());
+    }
+
+    console.log("Returning deck for room: ", room, decks.get(room));
+    return decks.get(room);
+}
+
+function setDeck(room, deck) {
+    decks.set(room, deck);
+}
+
+
+function createDeck() {
+    let arrayDeck = suites.flatMap(suite => ranks.map(rank => ({ rank, suite, value: rank != "King" ? values[rank] : suite == "Hearts" || suite == "Diamonds" ? -1 : 13 })));
+    arrayDeck.push({ rank: "Joker", suite: "Black", value: 0 });
+    arrayDeck.push({ rank: "Joker", suite: "Red", value: 0 });
+    shuffleDeck(arrayDeck);
+    return arrayDeck;
+}
 
 function shuffleDeck(deck) {
     var currentIndex = deck.length, temporaryValue, randomIndex;
@@ -52,10 +76,17 @@ function shuffleDeck(deck) {
     return deck
 }
 
-const shuffledDeck = shuffleDeck(arrayDeck);
 
-function drawCard() {
-    card = shuffledDeck.pop();
+function sendDataToClients(socket, room, event, data) {
+    socket.to(room).emit(event, data);
+    socket.emit(event, data);
+}
+
+// const shuffledDeck = shuffleDeck(arrayDeck);
+
+function drawCard(room) {
+    deck = getDeck(room);
+    card = deck.pop();
     return card;
 }
 
@@ -68,18 +99,23 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
     socket.on("draw_card", (data) => {
-        card = drawCard();
-        socket.emit("update_deck", {
-            card: card,
-            updatedDeck: shuffledDeck
-        });
+        card = drawCard(data.room);
+        sendDataToClients(socket, data.room, "update_deck", { updatedDeck: getDeck(data.room) });
         console.log("Room", data.room, "drew a card: ", card);
     });
 
     socket.on("join_room", (data) => {
-        socket.join(data)
-        console.log("ROOMS", socket.rooms);
+        console.log("Client joined room: ", data.room);  
+        socket.join(data.room)
+        const deck = getDeck(data.room);
+        sendDataToClients(socket, data.room, "update_deck", { updatedDeck: deck });
     });
+
+    socket.on("request_deck", (data) => {
+        console.log("Received request_deck for room: ", data.room);
+        const deck = getDeck(data.room);
+        sendDataToClients(socket, data.room, "update_deck", { updatedDeck: deck });
+    })
 
 });
 
