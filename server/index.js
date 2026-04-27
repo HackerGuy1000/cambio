@@ -40,14 +40,14 @@ const values = {
 const decks = new Map()
 
 function getDeck(room) {
-    if(decks.has(room)){
+    if (decks.has(room)) {
         return decks.get(room);
     }
     else {
         decks.set(room, createDeck());
     }
 
-    console.log("Returning deck for room: ", room, decks.get(room));
+    // console.log("Returning deck for room: ", room, decks.get(room));
     return decks.get(room);
 }
 
@@ -57,9 +57,9 @@ function setDeck(room, deck) {
 
 
 function createDeck() {
-    let arrayDeck = suites.flatMap(suite => ranks.map(rank => ({ rank, suite, value: rank != "King" ? values[rank] : suite == "Hearts" || suite == "Diamonds" ? -1 : 13 })));
-    arrayDeck.push({ rank: "Joker", suite: "Black", value: 0 });
-    arrayDeck.push({ rank: "Joker", suite: "Red", value: 0 });
+    let arrayDeck = suites.flatMap(suite => ranks.map(rank => ({ rank, suite, value: rank != "King" ? values[rank] : suite == "Hearts" || suite == "Diamonds" ? -1 : 13, face: "back" })));
+    arrayDeck.push({ rank: "Joker", suite: "Black", value: 0, face: "back" });
+    arrayDeck.push({ rank: "Joker", suite: "Red", value: 0, face: "back" });
     shuffleDeck(arrayDeck);
     return arrayDeck;
 }
@@ -86,6 +86,11 @@ function sendDataToClients(socket, room, event, data) {
 
 function drawCard(room) {
     deck = getDeck(room);
+    if (deck.length === 0) {
+        console.log("Deck is empty for room: ", room);
+        decks.set(room, createDeck());
+        deck = getDeck(room);
+    }
     card = deck.pop();
     return card;
 }
@@ -105,7 +110,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("join_room", (data) => {
-        console.log("Client joined room: ", data.room);  
+        console.log("Client joined room: ", data.room);
         socket.join(data.room)
         const deck = getDeck(data.room);
         sendDataToClients(socket, data.room, "update_deck", { updatedDeck: deck });
@@ -115,8 +120,14 @@ io.on("connection", (socket) => {
         console.log("Received request_deck for room: ", data.room);
         const deck = getDeck(data.room);
         sendDataToClients(socket, data.room, "update_deck", { updatedDeck: deck });
-    })
+    });
 
+    socket.on("request_card_flip", (data) => {
+        console.log("Card clicked in room: ", data.room, "by socket id: ", data.id, "Card: ", data);
+        io.to(data.id).emit("flip_card", { suite: data.suite, rank: data.rank});
+        const deck = getDeck(data.room);
+        const cardIndex = deck.findIndex(card => card.suite === data.suite && card.rank === data.rank);
+    });
 });
 
 app.get('/status', (req, res) => {
