@@ -34,7 +34,7 @@ export default function CardGrid() {
         socket.on("update_deck", (data) => {
             setFetchedDeck(data.updatedDeck);
             console.log("Message received: ", data);
-            console.log("Last Element: ",fetchedDeck[fetchedDeck.length - 1]);
+            console.log("Last Element: ", fetchedDeck[fetchedDeck.length - 1]);
             console.log("DECK ID", socket.id)
         });
         socket.on("flip_card", (data) => {
@@ -69,7 +69,7 @@ export default function CardGrid() {
 
     return (
         <>
-            <div className="deck-wrapper">
+            <div className="card-grid-wrapper">
 
                 <h2>Card Grid</h2>
                 <div className="card-wrapper">
@@ -81,11 +81,11 @@ export default function CardGrid() {
 
 
                 </div>
-                <div className="deck-controls">
-                    <input className="deck-input" id="room-code" onChange={(e) => { setRoom(e.target.value) }} type="text" placeholder="Room Code..." />
+                <div className="card-grid-controls">
+                    <input className="card-grid-input" id="room-code" onChange={(e) => { setRoom(e.target.value) }} type="text" placeholder="Room Code..." />
 
-                    <button className="deck-button" id="join-room" onClick={joinRoom}>Join Room</button>
-                    <button className="deck-button" id="draw-card" onClick={drawCard}>Draw Card</button>
+                    <button className="card-grid-button" id="join-room" onClick={joinRoom}>Join Room</button>
+                    <button className="card-grid-button" id="draw-card" onClick={drawCard}>Draw Card</button>
                 </div>
             </div>
 

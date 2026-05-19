@@ -1,12 +1,4 @@
-.card-wrapper {
-    display: grid;
-    border: 5px solid red;
-    grid-template-columns: repeat(auto-fit, 150px);
-    gap: 15px;
-    justify-content: center;
-}
-
-.card-grid-button {
+.deck-button {
     margin: 10px;
     padding: 10px;
     font-size: 16px;
@@ -18,11 +10,11 @@
     cursor: pointer;
 }
 
-.card-grid-button:hover {
+.deck-button:hover {
     background-color: #45a049;
 }
 
-.card-grid-input {
+.deck-input {
     margin: 10px;
     padding: 10px;
     font-size: 16px;
@@ -30,7 +22,15 @@
     border-radius: 5px;
 }
 
-.card-grid-wrapper{
+.deck-page{
     height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.deck-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 

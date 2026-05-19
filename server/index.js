@@ -13,7 +13,16 @@ const io = new Server(server, {
     cors: {
         origin: ["http://localhost:5173", "http://localhost:4173"],
         methods: ["GET", "POST"]
+    },
+    cookie: {
+        name: "io",
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax"
     }
+
+
+
 })
 
 const PORT = 3000;
@@ -47,7 +56,7 @@ function getDeck(room) {
         decks.set(room, createDeck());
     }
 
-    // console.log("Returning deck for room: ", room, decks.get(room));
+// console.log("Returning deck for room: ", room, decks.get(room));
     return decks.get(room);
 }
 
@@ -124,10 +133,11 @@ io.on("connection", (socket) => {
 
     socket.on("request_card_flip", (data) => {
         console.log("Card clicked in room: ", data.room, "by socket id: ", data.id, "Card: ", data);
-        io.to(data.id).emit("flip_card", { suite: data.suite, rank: data.rank});
+        io.to(data.id).emit("flip_card", { suite: data.suite, rank: data.rank });
         const deck = getDeck(data.room);
         const cardIndex = deck.findIndex(card => card.suite === data.suite && card.rank === data.rank);
     });
+
 });
 
 app.get('/status', (req, res) => {
