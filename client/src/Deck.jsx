@@ -1,7 +1,10 @@
 import './Deck.css';
 import Card from './Card';
 import { useState, useEffect } from 'react';
+import { v4 as uuidv4 } from "uuid";
+import {getCookie, setCookie} from "./Utils.js"
 import io from "socket.io-client";
+
 
 const socket = io.connect("http://localhost:3000");
 
@@ -11,12 +14,23 @@ export default function Deck() {
     const [error, setError] = useState(null);
     const [room, setRoom] = useState("1");
     const [currentRoom, setCurrentRoom] = useState("1");
+    const [clientUUID, setClientUUID] = useState("");
+
+
+    const getUUID = () => {
+        if (getCookie("uuid") == ""){
+            const uuid = uuidv4();
+            setCookie("uuid", uuid, 2)
+        }
+        setClientUUID(getCookie("uuid"))
+        return clientUUID;
+    }
 
     useEffect(() => {
         function fetchDeck() {
             try {
                 console.log("Requesting deck for room: ", room);
-                socket.emit("request_deck", { room: room });
+                socket.emit("request_deck", { room: room, uuid: clientUUID });
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -25,14 +39,14 @@ export default function Deck() {
         };
 
         fetchDeck();
+        getUUID();
     }, []);
 
     useEffect(() => {
         socket.on("update_deck", (data) => {
             setFetchedDeck(data.updatedDeck);
             console.log("Message received: ", data);
-            console.log("DECK ID: ", socket.id)
-            console.log("Cookie: ",document.cookie)
+            console.log("UUID: ", clientUUID);
         });
         socket.on("flip_card", (data) => {
             let cardContainer = document.getElementById(`${data.suite}-${data.rank}-container`)
@@ -50,23 +64,20 @@ export default function Deck() {
 
     const joinRoom = () => {
         if (room !== "") {
-            socket.emit("join_room", { room: room });
-            socket.emit("request_deck", { room: room });
+            socket.emit("join_room", { room: room, uuid : clientUUID });
+            socket.emit("request_deck", { room: room, uuid: clientUUID });
             setCurrentRoom(room);
         }
     };
 
-    const drawCard = () => {
-        socket.emit("draw_card", {
-            room: room,
-        });
-    }
+    const drawCard = () => {socket.emit("draw_card", {room: room, uuid: clientUUID});}
 
     return (
         <>
             <div className="deck-page">
                 <h2>Deck</h2>
                 <h3>Room: {currentRoom}</h3>
+                <h3>UUID: {clientUUID}</h3>
 
                 <div className="deck-wrapper">
                     {fetchedDeck.slice(fetchedDeck.length - 1, fetchedDeck.length + 1).map((card) => (
