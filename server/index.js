@@ -41,6 +41,11 @@ const values = {
 
 const decks = new Map()
 
+function countInRoom(room) {
+    return io.of("/").adapter.rooms.get(room)?.size + 1 || 0;
+}
+
+
 function getDeck(room) {
     if (decks.has(room)) {
         return decks.get(room);
@@ -105,6 +110,9 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (socket) => {
+
+    console.log("New Socket Joined : ", socket.id)
+
     socket.on("draw_card", (data) => {
         card = drawCard(data.room);
         sendDataToClients(socket, data.room, "update_deck", { updatedDeck: getDeck(data.room) });
@@ -113,6 +121,7 @@ io.on("connection", (socket) => {
 
     socket.on("join_room", (data) => {
         console.log("Client joined room: ", data.room);
+        console.log("Total Clients : ", countInRoom(data.room))
         socket.join(data.room)
         const deck = getDeck(data.room);
         sendDataToClients(socket, data.room, "update_deck", { updatedDeck: deck });
@@ -141,20 +150,7 @@ app.get('/status', (req, res) => {
 });
 
 
-app.get("/api/deck", (req, res) => {
-    res.json(shuffledDeck);
-});
 
-app.post("/api/draw", (request, response) => {
-    const card = drawCard();
-    return response.json(card)
-})
-
-app.post("/api/shuffle", (request, response) => {
-    conseole.log("Shuffling the deck...");
-    const newDeck = shuffleDeck(shuffleDeck);
-    return response.json(newDeck);
-})
 
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

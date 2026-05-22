@@ -1,3 +1,5 @@
+import {v4 as uuidv4} from "uuid"
+
 export const getCookie = (cname) => {
     let name = cname + "=";
     let decodedCookie = decodeURIComponent(document.cookie);
@@ -20,3 +22,12 @@ export const setCookie = (cname, cvalue, exdays) => {
     let expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 }
+
+export const getUUID = () => {
+        if (getCookie("uuid") == ""){
+            const uuid = uuidv4();
+            setCookie("uuid", uuid, 2)
+        }
+        // setClientUUID(getCookie("uuid"))
+        return getCookie("uuid");
+    } 

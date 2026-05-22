@@ -1,12 +1,13 @@
 import './Deck.css';
 import Card from './Card';
 import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from "uuid";
-import {getCookie, setCookie} from "./Utils.js"
+// import { v4 as uuidv4 } from "uuid";
+import {getUUID} from "./Utils.js"
 import io from "socket.io-client";
 
 
 const socket = io.connect("http://localhost:3000");
+console.log("Client Socket ID : ", (socket))
 
 export default function Deck() {
     const [fetchedDeck, setFetchedDeck] = useState([]);
@@ -16,15 +17,6 @@ export default function Deck() {
     const [currentRoom, setCurrentRoom] = useState("1");
     const [clientUUID, setClientUUID] = useState("");
 
-
-    const getUUID = () => {
-        if (getCookie("uuid") == ""){
-            const uuid = uuidv4();
-            setCookie("uuid", uuid, 2)
-        }
-        setClientUUID(getCookie("uuid"))
-        return clientUUID;
-    }
 
     useEffect(() => {
         function fetchDeck() {
@@ -39,7 +31,7 @@ export default function Deck() {
         };
 
         fetchDeck();
-        getUUID();
+        setClientUUID(getUUID());
     }, []);
 
     useEffect(() => {
