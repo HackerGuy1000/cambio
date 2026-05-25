@@ -4,9 +4,7 @@ import io from "socket.io-client";
 import {getCookie} from "./Utils.js"
 
 
-const socket = io.connect("http://localhost:3000");
-
-export default function Card({ suite, rank, value, face, room, socketID }) {
+export default function Card({ suite, rank, value, face, room, socket }) {
 
     const [cardFace, setCardFace] = useState(face);
 
@@ -14,7 +12,7 @@ export default function Card({ suite, rank, value, face, room, socketID }) {
         let cardContainer = document.getElementById(`${suite}-${rank}-container`)
         if (cardContainer) {
             setCardFace(cardFace == "back" ? "front" : "back");
-            socket.emit("request_card_flip", { room: room, suite: suite, rank: rank, value: value, face: cardFace, id: socketID, uuid: getCookie("uuid") });
+            socket.emit("request_card_flip", { room: room, suite: suite, rank: rank, value: value, face: cardFace, id: socket.id, uuid: getCookie("uuid") });
         }
     }
 

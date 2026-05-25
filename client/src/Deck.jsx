@@ -6,10 +6,7 @@ import {getUUID} from "./Utils.js"
 import io from "socket.io-client";
 
 
-const socket = io.connect("http://localhost:3000");
-console.log("Client Socket ID : ", (socket))
-
-export default function Deck() {
+export default function Deck({socket}) {
     const [fetchedDeck, setFetchedDeck] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -73,7 +70,7 @@ export default function Deck() {
 
                 <div className="deck-wrapper">
                     {fetchedDeck.slice(fetchedDeck.length - 1, fetchedDeck.length + 1).map((card) => (
-                        <Card key={`${card["rank"]}-${card["suite"]}`} suite={card["suite"]} rank={card["rank"]} value={card["value"]} face={card["face"]} room={room} socketID={socket.id} />
+                        <Card key={`${card["rank"]}-${card["suite"]}`} suite={card["suite"]} rank={card["rank"]} value={card["value"]} face={card["face"]} room={room} socket = {socket}/>
                     ))}
                     <p>{fetchedDeck.length} Cards Remain</p>
                 </div>

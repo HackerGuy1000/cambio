@@ -4,11 +4,9 @@ import { useState, useEffect } from 'react';
 import io from "socket.io-client";
 
 
-const socket = io.connect("http://localhost:3000");
-
 const columns = [0, 1, 2, 3, 4, 5];
 
-export default function CardGrid() {
+export default function CardGrid({socket}) {
     const [fetchedDeck, setFetchedDeck] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -75,7 +73,7 @@ export default function CardGrid() {
                 <div className="card-wrapper">
 
                     {fetchedDeck.slice(0, 54).map((card) => (
-                        <Card key={`${card["rank"]}-${card["suite"]}`} suite={card["suite"]} rank={card["rank"]} value={card["value"]} face={card["face"]} room={room} socketID={socket.id} />
+                        <Card key={`${card["rank"]}-${card["suite"]}`} suite={card["suite"]} rank={card["rank"]} value={card["value"]} face={card["face"]} room={room} socket = {socket} />
                     ))}
 
 
