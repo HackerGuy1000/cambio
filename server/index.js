@@ -5,6 +5,8 @@ const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const { json } = require("stream/consumers");
+let mysql = require('mysql');
+
 
 app.use(express.json());
 const server = http.createServer(app);
