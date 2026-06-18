@@ -5,7 +5,10 @@ const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const { json } = require("stream/consumers");
-let mysql = require('mysql');
+const sqlite = require('node:sqlite');
+const { DatabaseSync } = require('node:sqlite');
+const database = new DatabaseSync(':memory:');
+
 
 
 app.use(express.json());
